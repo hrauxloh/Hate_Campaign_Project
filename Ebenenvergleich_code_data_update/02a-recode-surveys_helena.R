@@ -10,9 +10,13 @@
 library(haven)
 library(tidyverse)
 library(psych)
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-setwd(dirname(dirname(rstudioapi::getActiveDocumentContext()$path)))
-path <- getwd() %>% dirname() %>% dirname() 
+# load file with the paths to read in the GLES candidate files that are stored locally
+source("../raw_data_paths.R")
+if (Sys.getenv()[4] == "unix2003") {
+  path_to_gles = PATH1
+}
 
 vars_to_scale <- c(
   "lr_self", "extr_self",  "lr_party", "extr_party", 
@@ -21,11 +25,10 @@ vars_to_scale <- c(
   "race_chance", "race_close", "media_diffic", "media_impact", "camp_personal")
 
 # BTW GLES =====================================================================
-
-# svy_btw_00 <- read_stata(paste0(
-#   path, "/Surveys/GLES Kandidatenstudien/2021/ZA7704_v1-0-0_merge.dta"))
-svy_btw_00 <- read_stata("replication_mehrebenen_paper/ZA7704_v1-0-0_merge.dta")
-
+#svy_btw_00OLD <- read_stata(paste0(path_to_gles, "/ZA7704_v1-0-0_merge.dta"))
+svy_btw_00 <- read_stata(paste0(path_to_gles, "/ZA7704_v2-0-0_merge.dta"))
+#ncol(svy_btw_00OLD)
+ncol(svy_btw_00)
 
 ## Recode missing into "NA" ####
 
@@ -98,18 +101,23 @@ svy_btw_20 <- svy_btw_13 %>%
     ~ 6 - ., .names = "{.col}_rev")) %>%
   rowwise() %>% mutate(
     # indices: 1... 5
-    big5_extra = mean(c(e19a_r_rev, e19f_r)), 
-    big5_agrea = mean(c(e19b_r, e19g_r_rev)),
-    big5_consc = mean(c(e19c_r, e19h_r_rev)),
-    big5_emot = mean(c(e19d_r_rev, e19i_r)),
-    big5_open = mean(c(e19e_r, e19j_r_rev)))
+    big5_extra = mean(c(e19a_r_rev, e19f_r)), # zurueckhaltend, gesellig
+    big5_agrea = mean(c(e19b_r, e19g_r_rev)), # vertrauensvoll, kritisch
+    big5_consc = mean(c(e19c_r, e19h_r_rev)), # gruendlich, bequem
+    big5_emot = mean(c(e19d_r_rev, e19i_r)), # entspannt, nervoes
+    big5_open = mean(c(e19e_r, e19j_r_rev))) # fantasievoll, wenig kuenstlerisch
 
 # # CHECK ALPHA  ###< a bit now maybe for all of them?
-svy_btw_20 %>% select(e19a_r_rev, e19f_r) %>% psych::alpha() %>% summary()
-svy_btw_20 %>% select(e19b_r, e19g_r_rev) %>% psych::alpha() %>% summary()
-svy_btw_20 %>% select(e19c_r, e19h_r_rev) %>% psych::alpha() %>% summary()
-svy_btw_20 %>% select(e19d_r_rev, e19i_r) %>% psych::alpha() %>% summary()
-svy_btw_20 %>% select(e19e_r, e19j_r_rev) %>% psych::alpha() %>% summary()
+svy_btw_20 %>% dplyr::select(e19a_r_rev, e19f_r) %>% psych::alpha() %>% summary()
+svy_btw_20 %>% dplyr::select(e19b_r, e19g_r_rev) %>% psych::alpha() %>% summary()
+svy_btw_20 %>% dplyr::select(e19c_r, e19h_r_rev) %>% psych::alpha() %>% summary()
+svy_btw_20 %>% dplyr::select(e19d_r_rev, e19i_r) %>% psych::alpha() %>% summary()
+svy_btw_20 %>% dplyr::select(e19e_r, e19j_r_rev) %>% psych::alpha() %>% summary()
+svy_btw_20 %>% dplyr::select(e19a_r_rev, e19f_r,
+                      e19b_r, e19g_r_rev,
+                      e19c_r, e19h_r_rev,
+                      e19d_r_rev, e19i_r,
+                      e19e_r, e19j_r_rev) %>% psych::alpha(check.keys = TRUE) %>% summary()
 
 ## Campaign dynamics ####
 
@@ -164,17 +172,28 @@ svy_btw_40[vars_to_scale] <- lapply(svy_btw_40[vars_to_scale], function(x) {
   (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)) 
 })
 
+# Calculate proportion of attacks ####
+
+svy_btw_40 <- svy_btw_40 %>% 
+  mutate(n_tweets = as.numeric(n_tweets),
+         n_attacks_tw = as.numeric(n_attacks_tw),
+         prop_attacks_fb = (n_attacks_fb / n_posts),
+         prop_attacks_tw = (n_attacks_tw / n_tweets))
+
 svy_btw <- svy_btw_40 %>% 
-  select(
-    bundesland, wei_kandi,
+  dplyr::select(
+    bula, wei_kandi,
     party, incumb, governing,
-    lr_self, extr_self,  lr_party, extr_party, lr_voters, extr_voters, 
-    dist_party, dist_voters,
+    lr_self, extr_self, lr_party, extr_party, lr_voters, extr_voters, 
+    dist_party, dist_voters, female, age, immigr,
     big5_extra, big5_agrea, big5_consc, big5_emot, big5_open,
     race_chance, race_close, media_diffic, media_impact, camp_personal,
-    camp_time, camp_budget, camp_staff,
-    camp_manager) 
-write.csv(svy_ltw, "replication_mehrebenen_paper/svy_btw.csv", row.names = F)
+    camp_time, camp_budget, camp_staff, camp_manager,
+    prop_attacks_fb, prop_attacks_tw, n_attacks_fb, n_attacks_tw, n_posts, n_tweets,
+    ) 
+
+write.csv(svy_btw, "replication_mehrebenen_paper/svy_btw.csv", row.names = F)
+
 
 # LTWs =========================================================================
 
@@ -197,8 +216,11 @@ svy_ltw_01 <- svy_ltw_00 %>%
     wahl == 112 ~ "ltw_be_2023",
     wahl == 121 ~ "ltw_mv_2021",
     wahl == 141 ~ "ltw_st_2021")) %>%
-  # filter out Berlin 2023
-  filter(election_id != "ltw_be_2023")
+  # filter out Berlin 2023 and other 2023 LTWs
+  filter(election_id != "ltw_be_2023" & election_id != "ltw_by_2023" & 
+         election_id != "ltw_he_2023" & election_id != "ltw_hb_2023")
+# (Saxony-Anhalt 2021, Berlin 2021, Mecklenburg-Western Pomerania 2021, Schleswig-Holstein 2022, 
+# North Rhine-Westphalia 2022, Lower Saxony 2022, and Saarland 2022).
 
 ## Sociodemographics ####
 
@@ -340,7 +362,7 @@ svy_ltw_40[vars_to_scale] <- lapply(svy_ltw_40[vars_to_scale], function(x) {
 ## Export file ####
 
 svy_ltw <- svy_ltw_40 %>% 
-  select(
+  dplyr::select(
     jahr, land, wahl, SERIAL,
     female, age, immigr,
     party, incumb, governing,

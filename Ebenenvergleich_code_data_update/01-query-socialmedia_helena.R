@@ -28,7 +28,7 @@ db <- dbConnect(
   dbname = db_name, host = db_host, port = db_port
 )
 
-setwd(dirname(dirname(rstudioapi::getActiveDocumentContext()$path)))
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 # dbListTables(db)
 # dbGetQuery(db, "describe tw_accounts_new")
@@ -52,7 +52,7 @@ fb_btw_bypartyday <- dbGetQuery(
   STR_TO_DATE(p.created_at, '%Y-%m-%d') date_created, 
   REGEXP_REPLACE(p.post_id, 'posts/', '') post_id, 
   CASE WHEN a.Attack > 0.5 THEN 1 ELSE 0 END AS attack
-  FROM candidacies24 c  
+  FROM candidacies24 c
   LEFT JOIN elections24 e ON c.election_id = e.election
   LEFT JOIN fb_accounts_new fb ON fb.cand_id = c.cand_id
   LEFT JOIN posts_fin p ON p.fb_id = fb.fb_id
@@ -157,6 +157,7 @@ tw_btw_bycand <- tw_btw_bycand %>%
 
 write.csv(tw_btw_bycand, "replication_mehrebenen_paper/tw_btw_bycand.csv", row.names = F)
   
+
 # LTWs =========================================================================
 
 ## Facebook ####
@@ -182,13 +183,13 @@ fb_ltw_bypartyday <- dbGetQuery(
   LEFT JOIN posts_fin p ON p.fb_id = fb.fb_id
   LEFT JOIN predict_attack_fb a ON REGEXP_REPLACE(p.post_id, 'posts/', '') = a.tweet_id
   WHERE c.election_id in ('ltw_be_2021', 'ltw_bw_2021',
-  'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 'ltw_mv_2021', 'ltw_ni_2022', 
+  'ltw_mv_2021', 'ltw_ni_2022', 
   'ltw_nw_2022', 'ltw_rp_2021', 'ltw_sh_2022', 'ltw_sl_2022', 'ltw_st_2021')) dt1
   WHERE TIMESTAMPDIFF(DAY, date_created, date_election) >= 0 
   AND TIMESTAMPDIFF(DAY, date_created, date_election) <= 90) dt2
   GROUP BY date_created, election_id, date_election, days_to_election, party 
   ORDER BY date_created, election_id, date_election, days_to_election, party") 
-
+#TODO NOTE changed Seb 'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 
 write.csv(fb_ltw_bypartyday, "replication_mehrebenen_paper/fb_ltw_bypartyday.csv", row.names = F)
 
 ### by candidate ####
@@ -207,13 +208,13 @@ fb_ltw_bycand <- dbGetQuery(
   LEFT JOIN posts_fin p ON p.fb_id = fb.fb_id
   LEFT JOIN predict_attack_fb a ON REGEXP_REPLACE(p.post_id, 'posts/', '') = a.tweet_id
   WHERE c.election_id in ('ltw_be_2021', 'ltw_bw_2021',
-  'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 'ltw_mv_2021', 'ltw_ni_2022', 
+  'ltw_mv_2021', 'ltw_ni_2022', 
   'ltw_nw_2022', 'ltw_rp_2021', 'ltw_sh_2022', 'ltw_sl_2022', 'ltw_st_2021')) dt1
   WHERE TIMESTAMPDIFF(DAY, date_created, date_election) >= 0 
   AND TIMESTAMPDIFF(DAY, date_created, date_election) <= 90
   GROUP BY election_id, cand_id 
   ORDER BY election_id, cand_id") 
-
+#TODO NOTE changed Seb 'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 
 meta_ltw <- dbGetQuery(
   db, 
   "SELECT c1.cand_id, c1.gender, c1.birthyear, 
@@ -221,9 +222,9 @@ meta_ltw <- dbGetQuery(
   FROM core24 c1
   LEFT JOIN candidacies24 c2 on c1.cand_id = c2.cand_id
   WHERE c2.election_id in ('ltw_be_2021', 'ltw_bw_2021',
-  'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 'ltw_mv_2021', 'ltw_ni_2022', 
+  'ltw_mv_2021', 'ltw_ni_2022', 
   'ltw_nw_2022', 'ltw_rp_2021', 'ltw_sh_2022', 'ltw_sl_2022', 'ltw_st_2021')")
-
+#TODO NOTE changed Seb 'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 
 fb_ltw_bycand <- fb_ltw_bycand %>%
   right_join(., meta_ltw, by = "cand_id")
 
@@ -251,14 +252,14 @@ tw_ltw_bypartyday_requeried <- dbGetQuery(
   LEFT JOIN tweets t ON t.twitter_id = tw.twitter_id
   LEFT JOIN predict a ON t.tweet_id = a.tweet_id
   WHERE c.election_id in ('ltw_be_2021', 'ltw_bw_2021',
-  'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 'ltw_mv_2021', 'ltw_ni_2022', 
+  'ltw_mv_2021', 'ltw_ni_2022', 
   'ltw_nw_2022', 'ltw_rp_2021', 'ltw_sh_2022', 'ltw_sl_2022', 'ltw_st_2021')) dt1
   WHERE TIMESTAMPDIFF(DAY, date_created, date_election) >= 0 
   AND TIMESTAMPDIFF(DAY, date_created, date_election) <= 90) dt2
   GROUP BY date_created, date_election, days_to_election, party 
   ORDER BY date_created, date_election, days_to_election, party") 
-
-write.csv(tw_ltw_bypartyday, "replication_mehrebenen_paper/tw_ltw_bypartyday.csv", row.names = F)
+#TODO NOTE changed Seb 'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 
+write.csv(tw_ltw_bypartyday_requeried, "replication_mehrebenen_paper/tw_ltw_bypartyday.csv", row.names = F)
 
 ### by candidate ####
 
@@ -275,13 +276,13 @@ tw_ltw_bycand <- dbGetQuery(
   LEFT JOIN tweets t ON t.twitter_id = tw.twitter_id
   LEFT JOIN predict a ON t.tweet_id = a.tweet_id
   WHERE c.election_id in ('ltw_be_2021', 'ltw_bw_2021',
-  'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 'ltw_mv_2021', 'ltw_ni_2022', 
+  'ltw_mv_2021', 'ltw_ni_2022', 
   'ltw_nw_2022', 'ltw_rp_2021', 'ltw_sh_2022', 'ltw_sl_2022', 'ltw_st_2021')) dt1
   WHERE TIMESTAMPDIFF(DAY, date_created, date_election) >= 0 
   AND TIMESTAMPDIFF(DAY, date_created, date_election) <= 90
   GROUP BY election_id, cand_id 
   ORDER BY election_id, cand_id") 
-
+#TODO NOTE changed Seb 'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 
 tw_ltw_bycand <- tw_ltw_bycand %>%
   right_join(., meta_ltw, by = "cand_id")
 
