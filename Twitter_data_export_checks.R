@@ -45,3 +45,16 @@ long_df <- bind_rows(handles_with_counts)
 wide_df <- long_df %>%
   select(handle, folder, num_tweets) %>%
   pivot_wider(names_from = folder, values_from = num_tweets, values_fill = 0)
+
+## Completeness (share of active accounts per election for 70 days prior)
+pct_complete_list <- lapply(names(all_dfs), function(name) {
+  df <- all_dfs[[name]]
+  total_handles <- nrow(df)
+  nonzero_handles <- sum(df$num_tweets > 0, na.rm = TRUE)
+  pct_complete <- nonzero_handles / total_handles * 100
+  data.frame(
+    election = name,
+    pct_complete = pct_complete
+  )
+})
+pct_complete <- bind_rows(pct_complete_list)
