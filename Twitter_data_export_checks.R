@@ -11,7 +11,7 @@ subfolders <- list.dirs(main_dir, full.names = TRUE, recursive = FALSE)
 for (folder in subfolders) {
 
   folder_name <- basename(folder)
-  files <- list.files(folder, pattern = "_collection_stats.csv$", full.names = TRUE)
+  files <- list.files(folder, pattern = "collection_stats.*\\.csv$", full.names = TRUE)
   df <- files %>%
     lapply(read.csv) %>%
     bind_rows()
