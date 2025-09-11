@@ -37,11 +37,11 @@ candidates_5_0 <- dbGetQuery(db, "SELECT * FROM candidates_5_0")
 elections24 <- dbGetQuery(db, "SELECT * FROM elections24")
 election_dates_5_0 <- dbGetQuery(db, "SELECT * FROM election_dates_5_0")
 # - fb_accounts_new
-fb_accounts_new <- dbGetQuery(db, "SELECT * FROM fb_accounts_new")
+fb_accounts_new <- dbGetQuery(db, "SELECT * FROM fb_accounts_new LIMIT 200")
 # - posts_fin
-posts_fin <- dbGetQuery(db, "SELECT * FROM posts_fin") ## this is the one I decide to use
+posts_fin <- dbGetQuery(db, "SELECT * FROM posts_fin LIMIT 200") ## this is the one I decide to use
 # - predict_attack
-predict_attack_fb <- dbGetQuery(db, "SELECT * FROM predict_attack_fb") ## seems to be long enoough to be from posts_fin?, but uses twitter_id name column?
+predict_attack_fb <- dbGetQuery(db, "SELECT * FROM predict_attack_fb LIMIT 200") ## seems to be long enoough to be from posts_fin?, but uses twitter_id name column?
 
 
 fb_ltw_bycand_aktuell <- dbGetQuery(
@@ -75,8 +75,6 @@ fb_ltw_bycand_aktuell <- dbGetQuery(
   'ltw_th_2024',
   'ltw_hh_2025')) dt1
   WHERE TIMESTAMPDIFF(DAY, date_created, date_election) BETWEEN 0 AND 90
-
-
   GROUP BY election_id, cand_id, SERIAL
   ORDER BY election_id, cand_id
 ") 
@@ -109,6 +107,9 @@ meta_ltw_aktuell <- dbGetQuery(
 fb_ltw_bycand_aktuell_safety_copy <- fb_ltw_bycand_aktuell
 fb_ltw_bycand_aktuell <- fb_ltw_bycand_aktuell %>%
   right_join(., meta_ltw_aktuell, by = c("cand_id", "election_id"))
+##after joining this has a row count og 10543, same length as the metw_ltw_aktuell
+##this makes sense because for each meta contains the participation in all the elections
+##of the participants, 
 
 
 # 
@@ -128,10 +129,10 @@ predict <- dbGetQuery(db, "SELECT * FROM predict LIMIT 100")
 
 tw_ltw_bycand_aktuell <- dbGetQuery(
   db, 
-  "SELECT election_id, cand_id, COUNT(*) n_tweets, SUM(attack) AS n_attacks FROM 
-  (SELECT c.cand_id, c.election_id, c.SERIAL, STR_TO_DATE(e.election_date, '%m/%d/%Y') date_election,
+  "SELECT election_id, cand_id, SERIAL, COUNT(*) n_tweets, SUM(attack) AS n_attacks FROM 
+  (SELECT c.cand_id, c.election_id, c.SERIAL, e.election_date AS date_election,
   c.party_id, tw.twitter_id, 
-  DATE(STR_TO_DATE(t.created_at, '%Y-%m-%d %H:%i:%s')) date_created, t.tweet_id,  
+  DATE(t.created_at) AS date_created, t.tweet_id,  
   CASE WHEN a.Attack > 0.5 THEN 1 ELSE 0 END AS attack
   FROM candidacies_5_0 c
   LEFT JOIN election_dates_5_0 e ON c.election_id = e.election_id
@@ -155,9 +156,12 @@ tw_ltw_bycand_aktuell <- dbGetQuery(
   'ltw_sn_2024',
   'ltw_th_2024',
   'ltw_hh_2025')) dt1
+  WHERE TIMESTAMPDIFF(DAY, date_created, date_election) BETWEEN 0 AND 90
   GROUP BY election_id, cand_id, SERIAL
   ORDER BY election_id, cand_id") 
 
 tw_ltw_bycand_aktuell_safety_copy <- tw_ltw_bycand_aktuell
 tw_ltw_bycand_aktuell <- tw_ltw_bycand_aktuell %>%
   right_join(., meta_ltw_aktuell, by = c("cand_id", "election_id"))
+
+# where a match could not be made, the columns are NA

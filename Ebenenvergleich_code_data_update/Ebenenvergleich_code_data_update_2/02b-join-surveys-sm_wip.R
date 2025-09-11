@@ -31,10 +31,31 @@ sm_ltw <- sm_ltw %>%
   mutate(any_posts_tweets = ifelse(n_tweets > 0 | n_posts > 0, 1, 0))
   
 joined_ltw_wip <- sm_ltw %>%
-  full_join(., svy_ltw, by = c("ltw_id" = "SERIAL")) 
+  full_join(., svy_ltw, by = c("SERIAL")) 
 
 write.csv(joined_ltw_wip, "joined_ltw_wip.csv", row.names = F)
 
+
+#### joined facebook only
+fb_ltw <- fb_ltw %>%
+  # proportion of attacks
+  mutate(prop_attacks_fb = (n_attacks / n_posts)) %>%
+  # participated and invited - check Mona's stuff for values
+  mutate(invited_bin = ifelse(invited %in% c(1, 2), 1, 0), 
+         participated_bin = ifelse(participated %in% c(1, 2, 3), 1, 0))
+
+joined_ltw_wip_fb <- fb_ltw %>%
+  full_join(., svy_ltw, by = c("SERIAL"))
+
+#### joined tweets only
+tw_ltw <- tw_ltw %>%
+  # proportion of attacks
+  mutate(prop_attacks_tw = (n_attacks / n_tweets)) %>%
+  # participated and invited - check Mona's stuff for values
+  mutate(invited_bin = ifelse(invited %in% c(1, 2), 1, 0), 
+         participated_bin = ifelse(participated %in% c(1, 2, 3), 1, 0))
+joined_ltw_wip_tw <- tw_ltw %>%
+  full_join(., svy_ltw, by = c("SERIAL"))
 
 # BTW / GLES ===================================================================
 #Prepare aggregated social media data for merging with GLES

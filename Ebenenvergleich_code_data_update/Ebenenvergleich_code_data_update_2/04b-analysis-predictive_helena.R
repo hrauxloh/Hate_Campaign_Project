@@ -24,7 +24,6 @@ library(tidyr)
 # OLS on probability of attacks ================================================
 
 ## LTW ####
-
 ################################### Facebook attacks
 mod_fb_ltw <- lmerTest::lmer(
   prop_attacks_fb ~ 
@@ -38,6 +37,7 @@ mod_fb_ltw <- lmerTest::lmer(
     race_chance + race_close + media_diffic + media_impact + camp_personal + 
     # controls
     age + (1 | election_id), data = joined_ltw) #### changed data = ltw to data = joined_ltw
+summary(mod_fb_ltw)
 
 mod_fb_ltw_update <- lmerTest::lmer(
   prop_attacks_fb ~ 
@@ -50,7 +50,8 @@ mod_fb_ltw_update <- lmerTest::lmer(
     # campaign dynamics
     race_chance + race_close + media_diffic + media_impact + camp_personal + 
     # controls
-    age + (1 | election_id), data = joined_ltw_wip)
+    age + (1 | election_id), data = joined_ltw_wip_fb)
+summary(mod_fb_ltw_update)
 # Comparison of models mod_fb_ltw and mod_fb_ltw_update
 
 
@@ -106,7 +107,7 @@ mod_tw_ltw <- lmerTest::lmer(
     race_chance + race_close + media_diffic + media_impact + camp_personal + 
     # controls
     age + (1 | election_id), data = joined_ltw) #### changed data = ltw to data = joined_ltw
-
+summary(mod_tw_ltw)
 
 mod_tw_ltw_update <- lmerTest::lmer(
   prop_attacks_tw ~ 
@@ -119,9 +120,27 @@ mod_tw_ltw_update <- lmerTest::lmer(
     # campaign dynamics
     race_chance + race_close + media_diffic + media_impact + camp_personal + 
     # controls
-    age + (1 | election_id), data = joined_ltw_wip) #### changed data = ltw to data = joined_ltw
+    age + (1 | election_id), data = joined_ltw_wip_tw) #### changed data = ltw to data = joined_ltw
 class(mod_tw_ltw) <- "lmerMod"
-stargazer(mod_tw_ltw, type = "text",  out = "replication_mehrebenen_paper/mod_tw_ltw.doc")
+summary(mod_tw_ltw_update)
+#stargazer(mod_tw_ltw, type = "text",  out = "replication_mehrebenen_paper/mod_tw_ltw.doc")
+
+plot_models(mod_tw_ltw, mod_tw_ltw_update, 
+            std.est = "std2", 
+            show.values = TRUE, 
+            title = "Comparison of Models")
+####notes
+#survey data is 2372 rows long, 1408 complete cases
+#joined_ltw complete cases 229
+#joined_ltw_wip com
+#complete cases 229
+#
+
+
+
+
+
+
 
 
 
