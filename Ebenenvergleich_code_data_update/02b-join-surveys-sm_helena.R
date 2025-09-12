@@ -7,16 +7,17 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 # LTW ==========================================================================
 
-fb_ltw <- read.csv("replication_mehrebenen_paper/fb_ltw_bycand.csv")
-tw_ltw <- read.csv("replication_mehrebenen_paper/tw_ltw_bycand.csv")
+# fb_ltw <- read.csv("replication_mehrebenen_paper/fb_ltw_bycand.csv")
+# tw_ltw <- read.csv("replication_mehrebenen_paper/tw_ltw_bycand.csv")
+
 svy_ltw <- read.csv("replication_mehrebenen_paper/svy_ltw.csv")
 
-sm_ltw <- full_join(
-  fb_ltw %>% rename("n_attacks_fb" = n_attacks),
-  tw_ltw %>% dplyr::select(cand_id, n_tweets, "n_attacks_tw" = n_attacks),
+sm_ltw_old <- full_join(
+  fb_ltw_bycand_old  %>% rename("n_attacks_fb" = n_attacks),
+  tw_ltw_bycand_old  %>% dplyr::select(cand_id, n_tweets, "n_attacks_tw" = n_attacks),
   by = c("cand_id")) 
 
-sm_ltw <- sm_ltw %>%
+sm_ltw_old <- sm_ltw_old %>%
   # proportion of attacks
   mutate(prop_attacks_fb = (n_attacks_fb / n_posts),
          prop_attacks_tw = (n_attacks_tw / n_tweets)) %>%
@@ -26,7 +27,7 @@ sm_ltw <- sm_ltw %>%
   # whether candidate has social media data
   mutate(any_posts_tweets = ifelse(n_tweets > 0 | n_posts > 0, 1, 0))
   
-joined_ltw <- sm_ltw %>%
+joined_ltw_old <- sm_ltw_old %>%
   full_join(., svy_ltw, by = c("ltw_id" = "SERIAL")) 
 
 write.csv(joined_ltw, "replication_mehrebenen_paper/joined_ltw.csv", row.names = F)

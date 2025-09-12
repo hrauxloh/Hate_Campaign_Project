@@ -39,13 +39,15 @@ write.csv(joined_ltw_wip, "joined_ltw_wip.csv", row.names = F)
 #### joined facebook only
 fb_ltw <- fb_ltw %>%
   # proportion of attacks
-  mutate(prop_attacks_fb = (n_attacks / n_posts)) %>%
-  # participated and invited - check Mona's stuff for values
+  mutate(prop_attacks_fb = n_attacks / n_posts) %>%
+  # keep only rows where prop_attacks_fb is not NA
+  filter(!is.na(prop_attacks_fb)) %>%
+  # participated and invited bins
   mutate(invited_bin = ifelse(invited %in% c(1, 2), 1, 0), 
          participated_bin = ifelse(participated %in% c(1, 2, 3), 1, 0))
 
 joined_ltw_wip_fb <- fb_ltw %>%
-  full_join(., svy_ltw, by = c("SERIAL"))
+  left_join(., svy_ltw, by = c("SERIAL"))
 
 #### joined tweets only
 tw_ltw <- tw_ltw %>%

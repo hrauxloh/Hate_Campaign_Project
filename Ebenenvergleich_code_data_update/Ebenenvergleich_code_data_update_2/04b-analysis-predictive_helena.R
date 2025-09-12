@@ -36,7 +36,7 @@ mod_fb_ltw <- lmerTest::lmer(
     # campaign dynamics
     race_chance + race_close + media_diffic + media_impact + camp_personal + 
     # controls
-    age + (1 | election_id), data = joined_ltw) #### changed data = ltw to data = joined_ltw
+    age + (1 | election_id), data = joined_ltw_old) #### changed data = ltw to data = joined_ltw
 summary(mod_fb_ltw)
 
 mod_fb_ltw_update <- lmerTest::lmer(

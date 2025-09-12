@@ -67,7 +67,7 @@ write.csv(fb_btw_bypartyday, "data/fb_btw_bypartyday.csv", row.names = F)
 
 ### by candidate ####
 
-fb_btw_bycand <- dbGetQuery(
+fb_btw_bycand_old <- dbGetQuery(
   db, 
   "SELECT election_id, cand_id, COUNT(*) n_posts, SUM(attack) AS n_attacks FROM 
   (SELECT c.cand_id, c.election_id, STR_TO_DATE(e.date, '%m/%d/%Y') date_election,
@@ -96,7 +96,7 @@ meta_btw <- dbGetQuery(
   LEFT JOIN candidacies24 c2 on c1.cand_id = c2.cand_id
   WHERE c2.election_id in ('btw_2021')") 
 
-fb_btw_bycand <- fb_btw_bycand %>%
+fb_btw_bycand_old <- fb_btw_bycand %>%
   right_join(., meta_btw, by = "cand_id")
 
 write.csv(fb_btw_bycand, "replication_mehrebenen_paper/fb_btw_bycand.csv", row.names = F)
@@ -132,7 +132,7 @@ write.csv(tw_btw_bypartyday, "replication_mehrebenen_paper/tw_btw_bypartyday.csv
 
 ### by candidate ####
 
-tw_btw_bycand <- dbGetQuery(
+tw_btw_bycand_old <- dbGetQuery(
   db, 
   "SELECT cand_id, COUNT(*) n_tweets, SUM(attack) AS n_attacks FROM 
   (SELECT c.cand_id, c.election_id, STR_TO_DATE(e.date, '%m/%d/%Y') date_election,
@@ -152,7 +152,7 @@ tw_btw_bycand <- dbGetQuery(
 
 #### for GLES merge ####
 
-tw_btw_bycand <- tw_btw_bycand %>%
+tw_btw_bycand_old <- tw_btw_bycand_old %>%
   right_join(., meta_btw, by = "cand_id")
 
 write.csv(tw_btw_bycand, "replication_mehrebenen_paper/tw_btw_bycand.csv", row.names = F)
@@ -194,7 +194,7 @@ write.csv(fb_ltw_bypartyday, "replication_mehrebenen_paper/fb_ltw_bypartyday.csv
 
 ### by candidate ####
 
-fb_ltw_bycand <- dbGetQuery(
+fb_ltw_bycand_old <- dbGetQuery(
   db, 
   "SELECT election_id, cand_id, COUNT(*) n_posts, SUM(attack) AS n_attacks FROM 
   (SELECT c.cand_id, c.election_id, STR_TO_DATE(e.date, '%m/%d/%Y') date_election,
@@ -215,7 +215,7 @@ fb_ltw_bycand <- dbGetQuery(
   GROUP BY election_id, cand_id 
   ORDER BY election_id, cand_id") 
 #TODO NOTE changed Seb 'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 
-meta_ltw <- dbGetQuery(
+meta_ltw_old <- dbGetQuery(
   db, 
   "SELECT c1.cand_id, c1.gender, c1.birthyear, 
   c2.incumbent, c2.party, c2.ltw_id, c2.invited, c2.participated
@@ -225,8 +225,8 @@ meta_ltw <- dbGetQuery(
   'ltw_mv_2021', 'ltw_ni_2022', 
   'ltw_nw_2022', 'ltw_rp_2021', 'ltw_sh_2022', 'ltw_sl_2022', 'ltw_st_2021')")
 #TODO NOTE changed Seb 'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 
-fb_ltw_bycand <- fb_ltw_bycand %>%
-  right_join(., meta_ltw, by = "cand_id")
+fb_ltw_bycand_old <- fb_ltw_bycand_old %>%
+  right_join(., meta_ltw_old, by = "cand_id")
 
 write.csv(fb_ltw_bycand, "replication_mehrebenen_paper/fb_ltw_bycand.csv", row.names = F)
 
@@ -263,7 +263,7 @@ write.csv(tw_ltw_bypartyday_requeried, "replication_mehrebenen_paper/tw_ltw_bypa
 
 ### by candidate ####
 
-tw_ltw_bycand <- dbGetQuery(
+tw_ltw_bycand_old <- dbGetQuery(
   db, 
   "SELECT election_id, cand_id, COUNT(*) n_tweets, SUM(attack) AS n_attacks FROM 
   (SELECT c.cand_id, c.ltw_id, c.election_id, STR_TO_DATE(e.date, '%m/%d/%Y') date_election,
@@ -283,8 +283,8 @@ tw_ltw_bycand <- dbGetQuery(
   GROUP BY election_id, cand_id 
   ORDER BY election_id, cand_id") 
 #TODO NOTE changed Seb 'ltw_by_2023', 'ltw_hb_2023', 'ltw_he_2023', 
-tw_ltw_bycand <- tw_ltw_bycand %>%
-  right_join(., meta_ltw, by = "cand_id")
+tw_ltw_bycand_old <- tw_ltw_bycand_old %>%
+  right_join(., meta_ltw_old, by = "cand_id")
 
 write.csv(tw_ltw_bycand, "replication_mehrebenen_paper/tw_ltw_bycand.csv", row.names = F)
 

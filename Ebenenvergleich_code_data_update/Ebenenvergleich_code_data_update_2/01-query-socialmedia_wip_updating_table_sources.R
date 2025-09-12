@@ -27,7 +27,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 #fb_ltw_bycand
 #- candidacies24
 candidacies24 <- dbGetQuery(db, "SELECT * FROM candidacies24")
-candidacies_5_0_server <- dbGetQuery(db, "SELECT * FROM candidacies_5_0 LIMIT 200")
+candidacies_5_0_server <- dbGetQuery(db, "SELECT * FROM candidacies_5_0")
 #core24
 core24 <- dbGetQuery(db, "SELECT * FROM core24")
 candidates_5_0 <- dbGetQuery(db, "SELECT * FROM candidates_5_0")
